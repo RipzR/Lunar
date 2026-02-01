@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<!-- 
+    ================================================================================
+    LUNARCHEATZ // PROJECT_HERMES // TERMINAL_SOURCE_v11.0_ULTRALINE
+    ================================================================================
+    [SYSTEM_LOG]
+    - TOTAL_LINES_TARGET: 1300+
+    - THEME: ELECTRIC_NEON_BLUE
+    - STATUS: UNDETECTED
+    - SECURITY_ENCRYPTION: AES-512_HYBRID
+    
+    [CORE_MODULES]
+    - MODULE_01: CORE_CSS_ENGINE_EXTENDED
+    - MODULE_02: PARTICLE_PHYSICS_SNOW_v4
+    - MODULE_03: DECRYPTOR_PRELOADER_SEQUENCER
+    - MODULE_04: SPA_NAVIGATION_CONTROLLER
+    - MODULE_05: GRID_COMMS_CHAT_v5
+    - MODULE_06: STATUS_MONITOR_SUB_REDIRECTS
+    
+    [AUTHORIZATION]
+    Property of LunarCheatz. Unauthorized reverse engineering will trigger 
+    terminal lockout protocol.
+    ================================================================================
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LunarCheatz | Terminal Access</title>
+    
+    <!-- Dependencies -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Share+Tech+Mono&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 
+        ============================================================================
+        [CSS_SECTION_01] ROOT CONFIGURATION & THEME CONSTANTS
+        ============================================================================
+        */
+        :root {
+            /* Palette */
+            --primary: #00e5ff;
+            --primary-glow: rgba(0, 229, 255, 0.65);
+            --primary-low: rgba(0, 229, 255, 0.12);
+            --bg-deep: #050505;
+            --bg-darker: #0a0a0c;
+            --bg-card: rgba(13, 13, 15, 0.99);
+            --bg-glass: rgba(0, 0, 0, 0.9);
+            
+            /* Status Colors */
+            --success: #00ff88;
+            --success-glow: rgba(0, 255, 136, 0.45);
+            --danger: #ff3e3e;
+            --warning: #ffcc00;
+            
+            /* Typography */
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --text-dark: #475569;
+            
+            /* Fonts */
+            --font-main: 'JetBrains Mono', monospace;
+            --font-hacker: 'Share Tech Mono', monospace;
+            --font-header: 'Inter', sans-serif;
+            
+            /* Sizing & Transitions */
+            --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            --nav-height: 95px;
+            --border-radius: 16px;
+            --shadow-primary: 0 0 25px var(--primary-low);
+        }
+
+        /* 
+        ============================================================================
+        [CSS_SECTION_02] GLOBAL ARCHITECTURE & UTILITIES
+        ============================================================================
+        */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: var(--font-main); 
+            text-decoration: none !important; 
+            outline: none;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body { 
+            background-color: var(--bg-deep); 
+            color: var(--text-main); 
+            overflow-x: hidden; 
+            line-height: 1.6;
+            cursor: default;
+        }
+
+        /* Scrollbar Implementation */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { 
+            background: #1e1e21; 
+            border-radius: 10px; 
+            border: 1px solid var(--primary-low);
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        /* Utility Layouts */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .flex-between { display: flex; align-items: center; justify-content: space-between; }
+        .no-select { user-select: none; }
+        .text-glow { text-shadow: 0 0 10px var(--primary-glow); }
+        .full-width { width: 100%; }
+        .grid-gap-20 { gap: 20px; }
+
+        /* 
+        ============================================================================
+        [CSS_SECTION_03] ANIMATION LIBRARY
+        ============================================================================
+        */
+        @keyframes slideIn { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes statusPulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(2); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
+        @keyframes dropFade { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes glitch { 0% { clip: rect(44px, 450px, 56px, 0); } 20% { clip: rect(12px, 450px, 99px, 0); } 100% { clip: rect(44px, 450px, 56px, 0); } }
+        @keyframes scanline { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+
+        /* 
+        ============================================================================
+        [CSS_SECTION_04] BACKGROUND ENGINE (PARTICLES & OVERLAYS)
+        ============================================================================
+        */
+        #snow-canvas { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 1; pointer-events: none; 
+        }
+        
+        /* CRT Scanline Overlay */
+        .crt-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 4px, 4px 100%;
+            z-index: 5000; pointer-events: none; opacity: 0.12;
+        }
+
+        /* 
+        ============================================================================
+        [CSS_SECTION_05] PRELOADER ENGINE
+        ============================================================================
+        */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #000; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; z-index: 10000; 
+            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .decrypt-label { 
+            font-size: 28px; color: var(--primary); 
+            text-shadow: 0 0 25px var(--primary-glow); 
+            letter-spacing: 12px; font-family: var(--font-hacker); 
+            text-transform: uppercase; 
+        }
+
+        /* 
+        ============================================================================
+        [CSS_SECTION_06] NAVIGATION CORE
+        ============================================================================
+        */
+        nav {
+            display: flex; justify-content: space-between; align-items: center; padding: 0 8%;
+            height: var(--nav-height); background: rgba(4, 4, 5, 0.96); 
+            border-bottom: 1px solid var(--primary-low); position: sticky; 
+            top: 0; z-index: 2000; backdrop-filter: blur(40px);
+        }
+        
+        .nav-logo { 
+            display: flex; align-items: center; font-size: 24px; 
+            font-weight: 900; color: var(--primary); 
+            text-shadow: 0 0 15px var(--primary-glow); cursor: pointer; 
+            font-family: var(--font-header);
+        }
+        .nav-logo img { 
+            height: 38px; margin-right: 15px; 
+            filter: drop-shadow(0 0 10px var(--primary-glow)); 
+        }
+
+        .nav-center { display: flex; gap: 8px; height: 100%; align-items: center; }
+        
+        /* Fixed Nav Link State */
+        .nav-link { 
+            padding: 10px 20px; color: var(--text-dim); font-size: 13px; 
+            text-transform: uppercase; font-weight: 700; border-radius: 8px; 
+            display: flex; align-items: center; gap: 10px; transition: var(--transition); 
+            background: transparent; border: 1px solid transparent;
+            cursor: pointer;
+        }
+        .nav-link i { font-size: 14px; color: var(--primary); transition: 0.3s; }
+        
+        .nav-link:hover, .nav-link.active { 
+            color: #fff; background: var(--primary-low); 
+            border: 1px solid var(--primary-low); 
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.05); 
+        }
+        .nav-link:hover i { transform: scale(1.1); filter: brightness(1.2); }
+
+        /* 
+        ============================================================================
+        [CSS_SECTION_07] STATUS MODULE SYSTEM
+        ============================================================================
+        */
+        .status-container { position: relative; height: 100%; display: flex; align-items: center; }
+        
+        .status-dropdown {
+            position: absolute; top: 90px; left: 50%; transform: translateX(-50%);
+            width: 320px; background: var(--bg-card); border: 1px solid var(--primary);
+            border-radius: 12px; padding: 30px; display: none;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.9); 
+            animation: dropFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+            backdrop-filter: blur(30px);
+        }
+        .status-container:hover .status-dropdown { display: block; }
+        
+        .status-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid #1a1a1c; padding-bottom: 20px; margin-bottom: 20px; 
+        }
+        .status-header b { font-size: 15px; letter-spacing: 0.5px; color: #fff; }
+        
+        .status-indicator { 
+            display: flex; align-items: center; gap: 10px; color: var(--success); 
+            font-size: 10px; font-weight: 800; text-transform: uppercase; 
+        }
+        .pulse-dot { 
+            width: 10px; height: 10px; background: var(--success); 
+            border-radius: 50%; position: relative; box-shadow: 0 0 12px var(--success-glow); 
+        }
+        .pulse-dot::after { 
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            border: 2px solid var(--success); border-radius: 50%; 
+            animation: statusPulse 1.8s infinite; 
+        }
+        
+        .status-menu { display: flex; flex-direction: column; gap: 10px; }
+        .status-item { 
+            width: 100%; padding: 14px; background: rgba(255,255,255,0.03); 
+            border: 1px solid #1e1e21; border-radius: 10px; color: #777; 
+            display: flex; justify-content: space-between; align-items: center; 
+            transition: 0.3s; font-size: 13px; cursor: pointer;
+        }
+        .status-item i { transition: 0.3s; }
+        .status-item:hover { 
+            color: var(--primary); border-color: var(--primary-low); 
+            background: var(--primary-low); 
+        }
+        .status-item:hover i { transform: translateX(3px); color: var(--primary); }
+
+        .btn-lunar-login { 
+            background: var(--primary); color: #000; padding: 12px 28px; 
+            border-radius: 10px; font-weight: 900; font-size: 13px; 
+            text-transform: uppercase; box-shadow: 0 0 25px var(--primary-glow); 
+            display: flex; align-items: center; gap: 12px; transition: var(--transition);
+        }
+        .btn-lunar-login:hover { transform: translateY(-3px); box-shadow: 0 0 45px var(--primary); }
+
+        /* 
+        ============================================================================
+        [CSS_SECTION_08] COMMS_GRID (GLOBAL CHAT)
+        ============================================================================
+        */
+        #global-chat {
+            position: fixed; right: -380px; top: 120px; width: 360px; height: 75vh;
+            background: rgba(8, 8, 10, 0.99); border: 1px solid var(--primary-low);
+            z-index: 2500; transition: 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 20px 0 0 20px; display: flex; flex-direction: column;
+            backdrop-filter: blur(40px); box-shadow: -25px 0 70px rgba(0,0,0,0.9);
+        }
+        #global-chat.open { right: 0; }
+        
+        .chat-toggle { 
+            position: absolute; left: -65px; top: 30px; width: 65px; height: 65px; 
+            background: var(--bg-card); border: 1px solid var(--primary-low); 
+            border-right: none; border-radius: 15px 0 0 15px; display: flex; 
+            align-items: center; justify-content: center; cursor: pointer; 
+            color: var(--primary); font-size: 22px; transition: 0.3s;
+        }
+        .chat-toggle:hover { box-shadow: -10px 0 30px var(--primary-glow); }
+        
+        .chat-head-bar { 
+            padding: 25px; border-bottom: 1px solid var(--primary-low); 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
+        .chat-head-bar b { font-size: 15px; letter-spacing: 1px; color: var(--primary); }
+        
+        .chat-feed { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
+        .msg-bubble { padding-left: 15px; border-left: 2px solid #1e1e21; animation: fadeIn 0.8s ease; }
+        .msg-author { font-size: 11px; font-weight: 800; color: var(--primary); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 1.5px; }
+        .msg-content { font-size: 13px; color: #cbd5e1; line-height: 1.6; word-break: break-all; }
+        
+        .chat-controls { 
+            padding: 20px; border-top: 1px solid #1a1a1c; 
+            display: flex; gap: 12px; background: rgba(0,0,0,0.4);
+        }
+        .chat-input-field { 
+            flex: 1; background: #000; border: 1px solid #222; 
+            padding: 15px; color: #fff; font-size: 14px; 
+            border-radius: 12px; outline: none; transition: 0.3s;
+        }
+        .chat-input-field:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-low); }
+        
+        .chat-send-action {
+            background: var(--primary-low); border: 1px solid var(--primary-low);
+            color: var(--primary); width: 52px; height: 52px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; cursor: pointer; transition: 0.3s;
+        }
+        .chat-send-action:hover { background: var(--primary); color: #000; box-shadow: 0 0 25px var(--primary-glow); transform: scale(1.04); }
+
+        /* 
+        ============================================================================
+        [CSS_SECTION_09] VIEW CONTENT ARCHITECTURE
+        ============================================================================
+        */
+        .view-section { 
+            display: none; padding: 120px 8%; min-height: 90vh; 
+            animation: slideIn 0.9s cubic-bezier(0.16, 1, 0.3, 1); 
+            position: relative; z-index: 10; 
+        }
+
+        /* Hero Layout */
+        .hero-container { 
+            height: 65vh; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; text-align: center; 
+        }
+        .hero-container h1 { font-size: 90px; font-weight: 900; line-height: 0.9; margin-bottom: 30px; text-transform: uppercase; font-family: var(--font-header); letter-spacing: -2px; }
+        .hero-container h1 span { color: var(--primary); text-shadow: 0 0 50px var(--primary-glow); }
+        .hero-container p { color: #94a3b8; max-width: 800px; font-size: 19px; margin-bottom: 60px; line-height: 1.8; }
+        
+        .hero-btn-row { display: flex; gap: 25px; }
+        .btn-ui { 
+            padding: 24px 55px; border-radius: 15px; font-weight: 800; 
+            font-size: 16px; text-transform: uppercase; transition: 0.4s; 
+            display: flex; align-items: center; gap: 18px; border: none; cursor: pointer;
+        }
+        .btn-ui-solid { background: var(--primary); color: #000; box-shadow: 0 0 35px var(--primary-glow); }
+        .btn-ui-outline { background: rgba(255,255,255,0.02); border: 1px solid #1e1e21; color: #fff; }
+        .btn-ui:hover { transform: translateY(-8px); box-shadow: 0 25px 60px rgba(0,0,0,0.8); }
+
+        /* Catalog Layout */
+        .grid-master { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 40px; }
+        .p-card { 
+            background: var(--bg-card); border: 1px solid #1e1e21; 
+            border-radius: 25px; overflow: hidden; transition: 0.5s; cursor: pointer; 
+        }
+        .p-card:hover { border-color: var(--primary); transform: translateY(-15px); box-shadow: 0 35px 90px rgba(0,0,0,0.9); }
+        .p-card-thumb { 
+            height: 260px; background-image: url('Hermes.jpg'); 
+            background-size: cover; background-position: center; 
+            border-bottom: 1px solid #1e1e21; position: relative;
+        }
+        .p-card-thumb::before {
+            content: "v1.0.4 ACTIVE"; position: absolute; top: 25px; right: 25px;
+            background: var(--success); color: #000; padding: 6px 12px;
+            font-size: 10px; font-weight: 900; border-radius: 6px;
+        }
+        .p-card-body { padding: 40px; }
+        .p-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .p-card-header h3 { font-size: 26px; font-family: var(--font-header); font-weight: 900; color: #fff; }
+        .p-card-price { color: var(--primary); font-weight: 900; font-size: 24px; }
+        .p-card-text { color: #64748b; font-size: 15px; line-height: 1.7; margin-bottom: 35px; }
+        .p-card-tags { display: flex; gap: 20px; color: var(--primary); font-size: 11px; font-weight: 900; letter-spacing: 1px; }
+
+        /* 
+        ============================================================================
+        [CSS_SECTION_10] DETAIL_PURCHASE_MODULE (SPA-DETAIL)
+        ============================================================================
+        */
+        .purchase-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 50px; align-items: stretch; }
+        
+        .image-viewport { 
+            border: 1px solid var(--primary-low); border-radius: 28px; 
+            overflow: hidden; position: relative; background: #000; 
+            box-shadow: 0 30px 100px rgba(0,0,0,0.85); display: flex; 
+        }
+        .image-viewport img { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.1) brightness(0.9); }
+        
+        .overlay-stats { 
+            position: absolute; bottom: 40px; left: 40px; padding: 25px; 
+            background: rgba(0,0,0,0.92); border-left: 4px solid var(--primary); 
+            font-family: var(--font-hacker); font-size: 13px; color: var(--primary); 
+            backdrop-filter: blur(20px); box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .checkout-sidebar { 
+            background: var(--bg-card); border: 1px solid rgba(255,255,255,0.06); 
+            border-radius: 28px; padding: 60px; display: flex; 
+            flex-direction: column; justify-content: space-between; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+        
+        .price-banner { font-size: 68px; font-weight: 900; color: var(--primary); text-shadow: 0 0 45px var(--primary-glow); margin-bottom: 50px; font-family: var(--font-header); letter-spacing: -2px; }
+
+        /* FIXED PURCHASE OPTIONS SPACING */
+        .purchase-tier {
+            background: rgba(255,255,255,0.02); border: 1px solid #1e1e21;
+            padding: 30px; border-radius: 20px; margin-bottom: 20px; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; 
+            transition: var(--transition);
+        }
+        .purchase-tier:hover { background: rgba(255,255,255,0.04); border-color: var(--primary-low); }
+        .purchase-tier.active { 
+            border-color: var(--primary); background: var(--primary-low); 
+            box-shadow: inset 0 0 35px var(--primary-low); 
+        }
+        
+        .tier-info { display: flex; flex-direction: column; gap: 10px; } /* CRITICAL: Fixed spacing */
+        .tier-info b { font-size: 20px; color: #fff; font-family: var(--font-header); }
+        .tier-info span { font-size: 13px; color: #475569; font-weight: 600; letter-spacing: 0.5px; }
+        .tier-price { font-weight: 900; color: var(--primary); font-size: 22px; }
+
+        .btn-confirm { 
+            width: 100%; background: var(--primary); color: #000; padding: 26px; 
+            border-radius: 18px; font-weight: 900; text-transform: uppercase; 
+            font-size: 18px; transition: 0.4s; margin-top: 30px; 
+            display: flex; align-items: center; justify-content: center; gap: 20px; 
+            border: none; cursor: pointer; 
+        }
+        .btn-confirm:hover { box-shadow: 0 0 60px var(--primary); transform: translateY(-6px) scale(1.01); }
+
+        /* 
+        ============================================================================
+        [CSS_SECTION_11] FAQ & FOOTER ARCHITECTURE
+        ============================================================================
+        */
+        .faq-block { margin-top: 100px; max-width: 1000px; margin-left: auto; margin-right: auto; text-align: left; }
+        .faq-item { border-bottom: 1px solid #1e1e21; padding: 30px 0; cursor: pointer; }
+        .faq-q { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
+        .faq-q i { color: var(--primary); font-size: 14px; }
+        .faq-a { color: #64748b; font-size: 16px; display: none; padding-left: 30px; animation: fadeIn 0.5s ease; }
+        .faq-item:hover .faq-q { color: var(--primary); }
+
+        footer { 
+            padding: 100px 8% 50px; border-top: 1px solid #1a1a1c; 
+            margin-top: 150px; text-align: center; background: #040405;
+        }
+        .f-logo { font-size: 22px; color: var(--primary); margin-bottom: 20px; font-weight: 900; text-shadow: var(--text-glow); }
+        .f-copy { color: #334155; font-size: 13px; font-weight: 600; letter-spacing: 1px; }
+
+        /* 
+        ============================================================================
+        [CSS_SECTION_12] MODAL ARCHITECTURE (SECURITY HANDSHAKE)
+        ============================================================================
+        */
+        .overlay-gate {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.97); display: none; justify-content: center; 
+            align-items: center; z-index: 5000; backdrop-filter: blur(20px);
+        }
+        .modal-terminal {
+            background: #08080a; border: 1px solid var(--primary); 
+            width: 550px; padding: 60px; border-radius: 30px; position: relative;
+            box-shadow: 0 0 100px rgba(0, 229, 255, 0.15);
+        }
+        .form-group { margin-bottom: 30px; }
+        .form-group label { display: block; font-size: 11px; color: var(--primary); margin-bottom: 12px; text-transform: uppercase; font-weight: 900; letter-spacing: 2px; }
+        .form-input {
+            width: 100%; background: #000; border: 1px solid #1e1e21; 
+            padding: 20px; color: #fff; font-size: 15px; 
+            border-radius: 12px; transition: 0.3s;
+        }
+        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 20px var(--primary-low); }
+    </style>
+</head>
+<body>
+
+    <!-- Environment Layer -->
+    <canvas id="snow-canvas"></canvas>
+    <div class="crt-overlay"></div>
+
+    <!-- Security Preloader -->
+    <div id="loading-screen">
+        <div class="decrypt-label" id="loader-txt">INITIALIZING_ENCRYPTION...</div>
+    </div>
+
+    <!-- Main Navigation Architecture -->
+    <nav>
+        <div class="nav-logo" onclick="toggleRoute('home-view', document.querySelector('.nav-link'))">
+            <img src="LunarCheatz.png" alt="Logo">
+            LunarCheatz
+        </div>
+        
+        <div class="nav-center">
+            <div class="nav-link active" onclick="toggleRoute('home-view', this)">
+                <i class="fa-solid fa-house-chimney"></i> Home
+            </div>
+            <div class="nav-link" id="route-catalog" onclick="toggleRoute('products-view', this)">
+                <i class="fa-solid fa-box-open"></i> Products
+            </div>
+            
+            <!-- Global Status Dropdown -->
+            <div class="status-container">
+                <div class="nav-link"><i class="fa-solid fa-bolt-lightning"></i> Status</div>
+                <div class="status-dropdown no-select">
+                    <div class="status-header">
+                        <b>Hermes Pro</b>
+                        <div class="status-indicator">
+                            <div class="pulse-dot"></div> UNDETECTED
+                        </div>
+                    </div>
+                    <div class="status-menu">
+                        <a href="https://hermes.sell.app/" target="_blank" class="status-item">
+                            <span>Hermes Web</span> <i class="fa-solid fa-globe"></i>
+                        </a>
+                        <a href="https://discord.gg/AV5M39pH7g" target="_blank" class="status-item">
+                            <span>Alpha Discord</span> <i class="fa-brands fa-discord"></i>
+                        </a>
+                        <div onclick="toggleRoute('detail-view')" class="status-item">
+                            <span>Quick Buy</span> <i class="fa-solid fa-cart-plus"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="https://discord.gg/fTxQD9NpqF" target="_blank" class="nav-link">
+                <i class="fa-solid fa-headset"></i> Support
+            </a>
+        </div>
+
+        <a href="https://discord.gg/fTxQD9NpqF" target="_blank" class="btn-lunar-login">
+            <i class="fa-solid fa-user-shield"></i> Login to Lunar
+        </a>
+    </nav>
+
+    <!-- Secure Messaging Hub (Sidebar Chat) -->
+    <div id="global-chat">
+        <div class="chat-toggle" onclick="toggleChatGrid()"><i class="fa-solid fa-terminal"></i></div>
+        <div class="chat-head-bar">
+            <b style="color:var(--primary);">// LUNAR_GRID_v5.0</b>
+            <span style="color:var(--success); font-size:10px; font-weight:900;">SECURE_GRID</span>
+        </div>
+        <div class="chat-feed" id="chat-scroller">
+            <div class="msg-bubble">
+                <span class="msg-author">LunarBot:</span>
+                <p class="msg-content">Neural link established. Masking packet origins...</p>
+            </div>
+        </div>
+        <div class="chat-controls">
+            <input type="text" class="chat-input-field" id="chat-input" placeholder="Type message..." onkeypress="handleEnter(event)">
+            <button class="chat-send-action" onclick="dispatchMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- [HOME_VIEW_ARCHITECTURE] -->
+    <div id="home-view" class="view-section" style="display: block;">
+        <div class="hero-container">
+            <h1>UNLEASH THE<br><span>TOTAL POWER</span></h1>
+            <p>Proprietary execution environments designed for extreme performance. LunarCheatz provides the most sophisticated bypass technology on the market. Undetected since launch.</p>
+            <div class="hero-btn-row">
+                <div class="btn-ui btn-ui-solid" onclick="toggleRoute('products-view', document.getElementById('route-catalog'))">
+                    <i class="fa-solid fa-shield-halved"></i> Explore Vault
+                </div>
+                <a href="https://discord.gg/fTxQD9NpqF" target="_blank" class="btn-ui btn-ui-outline">
+                    <i class="fa-brands fa-discord"></i> Join Comms
+                </a>
+            </div>
+
+            <!-- Enhanced Features Grid -->
+            <div class="faq-block" style="margin-top: 150px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; text-align: center;">
+                <div>
+                    <i class="fa-solid fa-microchip" style="font-size:30px; color:var(--primary); margin-bottom: 20px;"></i>
+                    <h3 style="margin-bottom:15px;">Advanced Injection</h3>
+                    <p style="font-size:14px; color:#64748b;">Military-grade injection hooks optimized for minimal overhead and maximum bypass speed.</p>
+                </div>
+                <div>
+                    <i class="fa-solid fa-lock" style="font-size:30px; color:var(--primary); margin-bottom: 20px;"></i>
+                    <h3 style="margin-bottom:15px;">Unbeatable Security</h3>
+                    <p style="font-size:14px; color:#64748b;">Proprietary anti-tamper shields prevent detection from server-side signature checks.</p>
+                </div>
+                <div>
+                    <i class="fa-solid fa-bolt" style="font-size:30px; color:var(--primary); margin-bottom: 20px;"></i>
+                    <h3 style="margin-bottom:15px;">Ultra Low Latency</h3>
+                    <p style="font-size:14px; color:#64748b;">Highly efficient code execution ensures zero FPS drop during intensive terminal usage.</p>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="faq-block">
+                <h2 style="font-size:40px; margin-bottom: 50px; font-family: var(--font-header);">Handshake // <span style="color:var(--primary)">FAQ</span></h2>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q"><i class="fa-solid fa-caret-right"></i> How long has Hermes been undetected?</div>
+                    <div class="faq-a">Hermes has maintained a 100% clean record since its initial release v1.0. We utilize unique bypass signatures for every user.</div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q"><i class="fa-solid fa-caret-right"></i> What payment methods are accepted?</div>
+                    <div class="faq-a">We currently accept various Crypto assets, Stripe, and PayPal through our automated checkout portal.</div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q"><i class="fa-solid fa-caret-right"></i> Do I get instant access after purchase?</div>
+                    <div class="faq-a">Yes. As soon as the transaction confirms, your license key is dispatched to your provided terminal email instantly.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- [PRODUCTS_CATALOG_ARCHITECTURE] -->
+    <div id="products-view" class="view-section">
+        <h2 style="font-size:48px; margin-bottom: 60px; font-family: var(--font-header);">Intelligence // <span style="color:var(--primary)">Catalog</span></h2>
+        <div class="grid-master">
+            <div class="p-card" onclick="toggleRoute('detail-view')">
+                <div class="p-card-thumb"></div>
+                <div class="p-card-body">
+                    <div class="p-card-header">
+                        <h3>Hermes Executor</h3>
+                        <span class="p-card-price">£6.00</span>
+                    </div>
+                    <p class="p-card-text">Proprietary multi-layer execution terminal with full 100% UNC support, internal script hubs, and real-time bypass protection.</p>
+                    <div class="p-card-tags">
+                        <span><i class="fa-solid fa-check-circle"></i> UNDETECTED</span>
+                        <span><i class="fa-solid fa-wind"></i> FAST_HOOK</span>
+                        <span><i class="fa-solid fa-code"></i> v1.0.42</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- [PURCHASE_DETAIL_ARCHITECTURE] -->
+    <div id="detail-view" class="view-section">
+        <div class="purchase-layout">
+            <div class="image-viewport">
+                <img src="Hermes.jpg" alt="Hermes Dashboard">
+                <div class="overlay-stats">
+                    <div style="font-weight:900; margin-bottom: 10px; font-size:15px;">> INITIALIZING_HERMES... SUCCESS</div>
+                    <div style="color:#555;">> SECURITY_GRID: ACTIVE_AES_512</div>
+                    <div style="color:#555;">> BYPASS_VERSION: 1.0.4.2_STABLE</div>
+                    <div style="color:#555;">> SESSION: ENCRYPTED</div>
+                </div>
+            </div>
+            
+            <div class="checkout-sidebar">
+                <div class="sidebar-top">
+                    <h1 style="margin-bottom:15px; font-family: var(--font-header); font-size:42px;">Hermes Executor</h1>
+                    <div style="color:#ffcc00; font-size:15px; margin-bottom:45px; font-weight:800;">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i> 
+                        <span style="color:#444; margin-left:15px;">(48 Verified Terminal Operatives)</span>
+                    </div>
+                    
+                    <div class="price-banner" id="price-target">£6.00</div>
+
+                    <!-- FIXED PURCHASE OPTIONS (Weekly/Monthly/3Months) -->
+                    <div class="purchase-tier active" onclick="setMasterPrice(6, this)">
+                        <div class="tier-info">
+                            <b>Weekly Hermes Access</b>
+                            <span>7 Days of Unlimited Privileges</span>
+                        </div>
+                        <div class="tier-price">£6.00</div>
+                    </div>
+
+                    <div class="purchase-tier" onclick="setMasterPrice(15, this)">
+                        <div class="tier-info">
+                            <b>Monthly Hermes Access</b>
+                            <span>30 Days of Unlimited Privileges</span>
+                        </div>
+                        <div class="tier-price">£15.00</div>
+                    </div>
+
+                    <div class="purchase-tier" onclick="setMasterPrice(35, this)">
+                        <div class="tier-info">
+                            <b>90 Day Hermes Access</b>
+                            <span>3 Months of Unlimited Privileges</span>
+                        </div>
+                        <div class="tier-price">£35.00</div>
+                    </div>
+                </div>
+                
+                <button class="btn-confirm" onclick="toggleSecurityModal()">
+                    <i class="fa-solid fa-unlock-keyhole"></i> Initialize Hermes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Gateway Modal -->
+    <div id="gate-overlay" class="overlay-gate">
+        <div class="modal-terminal">
+            <h2 style="margin-bottom: 35px; color: var(--primary); font-family: var(--font-header); letter-spacing: 2px;">AUTHENTICATION_GATEWAY</h2>
+            <div class="form-group">
+                <label>Terminal Email Address</label>
+                <input type="email" class="form-input" id="gate-email" placeholder="user@provider.com">
+            </div>
+            <div class="form-group">
+                <label>Target Discord Handle</label>
+                <input type="text" class="form-input" id="gate-discord" placeholder="operative#0000">
+            </div>
+            <div class="form-group">
+                <label>Alpha Coupon Key</label>
+                <input type="text" class="form-input" id="gate-coupon" placeholder="LunarLaunch!">
+            </div>
+            <div class="flex-between" style="padding: 25px 0; border-top: 1px solid #1a1a1c; font-size:20px; font-weight:900;">
+                <span>Total Due:</span>
+                <span id="final-cost-val" style="color:var(--primary); font-size:26px;">£6.00</span>
+            </div>
+            <button class="btn-confirm" onclick="alert('SYSTEM: Handshaking with payment gateway...')">
+                <i class="fa-solid fa-microchip"></i> Start Handshake
+            </button>
+            <div onclick="toggleSecurityModal()" style="text-align:center; margin-top:25px; color:#333; cursor:pointer; font-size:12px; font-weight:800;">[ ABORT_OPERATION ]</div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="f-logo">LunarCheatz // Terminal_Network</div>
+        <p class="f-copy">All operative traffic is monitored and encrypted. &copy; 2024 Lunar Systems Intelligence Group.</p>
+        <div style="margin-top:20px; color:#222; font-size:10px;">VERSION: 10.5.2_HYDRA_BUILD</div>
+    </footer>
+
+    <!-- 
+    ============================================================================
+    [JS_SECTION_13] JAVASCRIPT ENGINE HUB
+    ============================================================================
+    -->
+    <script>
+        /* 
+        ---------------------------------------------------------
+        [A] PARTICLE PHYSIC ENGINE (SNOW)
+        ---------------------------------------------------------
+        */
+        const canv = document.getElementById('snow-canvas');
+        const drawCtx = canv.getContext('2d');
+        let snowArray = [];
+
+        function generateParticles() {
+            canv.width = window.innerWidth;
+            canv.height = window.innerHeight;
+            snowArray = [];
+            const density = 170;
+            for(let i = 0; i < density; i++) {
+                snowArray.push({
+                    x: Math.random() * canv.width,
+                    y: Math.random() * canv.height,
+                    radius: Math.random() * 2 + 1,
+                    speed: Math.random() * 0.7 + 0.3,
+                    opacity: Math.random() * 0.6 + 0.1
+                });
+            }
+        }
+
+        function animateEnvironment() {
+            drawCtx.clearRect(0, 0, canv.width, canv.height);
+            drawCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            snowArray.forEach(p => {
+                drawCtx.beginPath();
+                drawCtx.globalAlpha = p.opacity;
+                drawCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                drawCtx.fill();
+                p.y += p.speed;
+                if(p.y > canv.height) p.y = -10;
+            });
+            requestAnimationFrame(animateEnvironment);
+        }
+
+        window.addEventListener('resize', generateParticles);
+        generateParticles();
+        animateEnvironment();
+
+        /* 
+        ---------------------------------------------------------
+        [B] HACKER PRELOADER DECRYPTOR
+        ---------------------------------------------------------
+        */
+        const loadingStr = "ESTABLISHING CONNECTION TO LUNARCHEATZ";
+        const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        let loopIter = 0;
+
+        const bootSequence = setInterval(() => {
+            const container = document.getElementById('loader-txt');
+            container.innerText = loadingStr.split("").map((letter, i) => {
+                if(i < loopIter) return loadingStr[i];
+                return glyphs[Math.floor(Math.random() * glyphs.length)];
+            }).join("");
+            
+            if(loopIter >= loadingStr.length) {
+                clearInterval(bootSequence);
+                console.log("[LunarOS] Handshake complete.");
+            }
+            loopIter += 1/4;
+        }, 35);
+
+        window.onload = () => {
+            setTimeout(() => {
+                const screen = document.getElementById('loading-screen');
+                screen.style.opacity = '0';
+                console.log("[LunarOS] Visual engine online.");
+                setTimeout(() => screen.style.display = 'none', 1500);
+            }, 2600);
+        };
+
+        /* 
+        ---------------------------------------------------------
+        [C] NAVIGATION & ROUTING SPA CONTROLLER
+        ---------------------------------------------------------
+        */
+        function toggleRoute(viewID, btnElement) {
+            console.log(`[LunarOS] Navigating to: ${viewID}`);
+            const sections = document.querySelectorAll('.view-section');
+            sections.forEach(s => s.style.display = 'none');
+            
+            const target = document.getElementById(viewID);
+            target.style.display = 'block';
+            
+            if(btnElement) {
+                const links = document.querySelectorAll('.nav-link');
+                links.forEach(l => l.classList.remove('active'));
+                btnElement.classList.add('active');
+            }
+            
+            // Auto-scroll to top on navigation
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* 
+        ---------------------------------------------------------
+        [D] PURCHASING & PRICE STATE ENGINE
+        ---------------------------------------------------------
+        */
+        let globalSelectedPrice = 6.00;
+        const couponKey = "LunarLaunch!";
+
+        function setMasterPrice(priceValue, element) {
+            console.log(`[LunarOS] Variant updated. New cost: £${priceValue}`);
+            globalSelectedPrice = priceValue;
+            
+            document.getElementById('price-target').innerText = "£" + priceValue.toFixed(2);
+            document.getElementById('final-cost-val').innerText = "£" + priceValue.toFixed(2);
+            
+            const tiers = document.querySelectorAll('.purchase-tier');
+            tiers.forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function toggleSecurityModal() {
+            const overlay = document.getElementById('gate-overlay');
+            const display = window.getComputedStyle(overlay).display;
+            overlay.style.display = display === 'none' ? 'flex' : 'none';
+        }
+
+        // Coupon Logic implementation
+        document.getElementById('gate-coupon')?.addEventListener('input', (event) => {
+            const display = document.getElementById('final-cost-val');
+            if(event.target.value === couponKey) {
+                console.log("[LunarOS] Security coupon validated.");
+                const discounted = globalSelectedPrice * 0.9;
+                display.innerText = "£" + discounted.toFixed(2);
+                display.style.color = "var(--success)";
+            } else {
+                display.innerText = "£" + globalSelectedPrice.toFixed(2);
+                display.style.color = "var(--primary)";
+            }
+        });
+
+        /* 
+        ---------------------------------------------------------
+        [E] COMMS_GRID INTERACTION MODULE (CHAT)
+        ---------------------------------------------------------
+        */
+        let gridIdentity = "";
+        
+        function toggleChatGrid() {
+            document.getElementById('global-chat').classList.toggle('open');
+        }
+
+        function handleEnter(e) {
+            if(e.key === 'Enter') dispatchMessage();
+        }
+
+        function dispatchMessage() {
+            const field = document.getElementById('chat-input');
+            const scrollArea = document.getElementById('chat-scroller');
+            
+            if(!field.value.trim()) return;
+
+            if(!gridIdentity) {
+                gridIdentity = prompt("GRID_SECURITY_CHALLENGE: Provide Discord Identity:");
+                if(!gridIdentity) return;
+                console.log(`[LunarOS] Identity Mask: ${gridIdentity} joined channel.`);
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'msg-bubble';
+            wrapper.innerHTML = `
+                <span class="msg-author">${gridIdentity}:</span>
+                <p class="msg-content">${field.value}</p>
+            `;
+            
+            scrollArea.appendChild(wrapper);
+            scrollArea.scrollTop = scrollArea.scrollHeight;
+            field.value = "";
+        }
+
+        /* 
+        ---------------------------------------------------------
+        [F] FAQ INTERFACE LOGIC
+        ---------------------------------------------------------
+        */
+        function toggleFaq(item) {
+            const answer = item.querySelector('.faq-a');
+            const display = window.getComputedStyle(answer).display;
+            answer.style.display = display === 'none' ? 'block' : 'none';
+        }
+
+        /* 
+        ---------------------------------------------------------
+        [G] TERMINAL TELEMETRY SYSTEM
+        ---------------------------------------------------------
+        */
+        function sendTelemetry() {
+            const timestamp = new Date().toLocaleTimeString();
+            console.log(`[${timestamp}] Telemetry Heartbeat: STABLE_IDLE`);
+        }
+        setInterval(sendTelemetry, 10000);
+
+        // Security Lock simulation
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        console.log("%c[LUNAR_OS] TERMINAL SHIELD ACTIVE", "color: #00e5ff; font-size: 20px; font-weight: bold;");
+    </script>
+</body>
+</html>
